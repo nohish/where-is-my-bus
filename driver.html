@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Bus Driver - Live Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,7 +29,7 @@
             max-width: 420px;
             padding: 30px 25px;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             text-align: center;
         }
 
@@ -104,100 +105,102 @@
 
 <body>
 
-<div class="card">
-    <h1>🚌 Bus Driver Tracker</h1>
-    <p>Keep screen ON for live tracking</p>
+    <div class="card">
+        <h1>🚌 Bus Driver Tracker</h1>
+        <p>Keep screen ON for live tracking</p>
 
-    <input id="busId" placeholder="Enter Bus ID (BUS001)" maxlength="10">
-    <button id="startBtn">Start Tracking</button>
+        <input id="busId" placeholder="Enter Bus ID (BUS001)" maxlength="10">
+        <button id="startBtn">Start Tracking</button>
 
-    <div id="status">Ready to track</div>
-    <div id="coords">Waiting for GPS...</div>
-</div>
+        <div id="status">Ready to track</div>
+        <div id="coords">Waiting for GPS...</div>
+    </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "XXXX",
-        appId: "XXXX"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBIfqL2iOksHYZlboVQ3q1iU-DO2sTCJrY",
+            authDomain: "whereismybus-ebe42.firebaseapp.com",
+            databaseURL: "https://whereismybus-ebe42-default-rtdb.firebaseio.com",
+            projectId: "whereismybus-ebe42",
+            storageBucket: "whereismybus-ebe42.firebasestorage.app",
+            messagingSenderId: "683775175774",
+            appId: "1:683775175774:web:dc47e18df198232a2058cf",
+            measurementId: "G-SCMYG4ZR4V"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    const busIdInput = document.getElementById("busId");
-    const startBtn = document.getElementById("startBtn");
-    const status = document.getElementById("status");
-    const coords = document.getElementById("coords");
+        const busIdInput = document.getElementById("busId");
+        const startBtn = document.getElementById("startBtn");
+        const status = document.getElementById("status");
+        const coords = document.getElementById("coords");
 
-    let watchId = null;
-    let tracking = false;
+        let watchId = null;
+        let tracking = false;
 
-    startBtn.addEventListener("click", () => {
+        startBtn.addEventListener("click", () => {
 
-        const busId = busIdInput.value.trim().toUpperCase();
+            const busId = busIdInput.value.trim().toUpperCase();
 
-        if (!busId) {
-            alert("Please enter Bus ID");
-            return;
-        }
+            if (!busId) {
+                alert("Please enter Bus ID");
+                return;
+            }
 
-        if (!tracking) {
+            if (!tracking) {
 
-            watchId = navigator.geolocation.watchPosition(
-                async (position) => {
+                watchId = navigator.geolocation.watchPosition(
+                    async (position) => {
 
-                    const data = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                        accuracy: position.coords.acacy,
-                        timestamp: Date.now()
-                    };
+                        const data = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            timestamp: Date.now()
+                        };
 
-                    await set(ref(db, "buses/" + busId), data);
+                        await set(ref(db, "buses/" + busId), data);
 
-                    coords.textContent =
-                        "📍 " +
-                        data.lat.toFixed(5) +
-                        ", " +
-                        data.lng.toFixed(5);
+                        coords.textContent =
+                            "📍 " +
+                            data.latitude.toFixed(5) +
+                            ", " +
+                            data.longitude.toFixed(5);
 
-                    status.textContent =
-                        "✅ Live - " +
-                        new Date().toLocaleTimeString();
-                },
-                (error) => {
-                    status.textContent = "❌ GPS Error: " + error.message;
-                },
-                {
-                    enableHighAccuracy: true,
-                    maximumAge: 5000,
-                    timeout: 10000
-                }
-            );
+                        status.textContent =
+                            "✅ Live - " +
+                            new Date().toLocaleTimeString();
+                    },
+                    (error) => {
+                        status.textContent = "❌ GPS Error: " + error.message;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 5000,
+                        timeout: 10000
+                    }
+                );
 
-            tracking = true;
-            startBtn.textContent = "Stop Tracking";
-            startBtn.classList.add("active");
+                tracking = true;
+                startBtn.textContent = "Stop Tracking";
+                startBtn.classList.add("active");
 
-        } else {
+            } else {
 
-            navigator.geolocation.clearWatch(watchId);
-            tracking = false;
+                navigator.geolocation.clearWatch(watchId);
+                tracking = false;
 
-            startBtn.textContent = "Start Tracking";
-            startBtn.classList.remove("active");
-            status.textContent = "⛔ Tracking Stopped";
-        }
-    });
-</script>
+                startBtn.textContent = "Start Tracking";
+                startBtn.classList.remove("active");
+                status.textContent = "⛔ Tracking Stopped";
+            }
+        });
+    </script>
 
 </body>
+
 </html>
