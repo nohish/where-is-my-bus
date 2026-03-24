@@ -59,51 +59,37 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname,'Public')));
+// ✅ Serve all static files from 'public'
+app.use(express.static(path.join(__dirname, 'Public')));
 
-// Home (Index)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Public', 'index.html'));
-});
-
-// Frontpage
-app.get('/frontpage', (req, res) => {
-    res.sendFile(path.join(__dirname,'Public', 'frontpage.html'));
-});
-
-// Driver Page
-app.get('/driver', (req, res) => {
-    res.sendFile(path.join(__dirname,'Public', 'driver.html'));
-});
-
-// Handle Track Form
+// ✅ Handle Track Form (ONLY dynamic route needed)
 app.post('/track', (req, res) => {
     const busId = req.body.bus?.trim().toUpperCase();
 
     if (!busId || busId.length < 3) {
-        return res.redirect('/frontpage');
+        return res.redirect('/frontpage.html');
     }
 
-    res.redirect(`/routemap?bus=${busId}`);
+    // Redirect to routemap page with bus ID
+    res.redirect(`/routemap.html?bus=${busId}`);
 });
 
-// Routemap
-app.get('/routemap', (req, res) => {
-    res.sendFile(path.join(__dirname,'Public', 'routemap.html'));
+// Optional: fallback to index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Public', 'index.html'));
 });
 
-// 404
+// 404 handler
 app.use((req, res) => {
     res.status(404).send("404 - Page Not Found");
 });
 
-// Start Server
+// Start server
 app.listen(port, () => {
-    console.log(`🚀 Server running at http://localhost:${port}`);
+    console.log(`🚀 Server running on port ${port}`);
 });
